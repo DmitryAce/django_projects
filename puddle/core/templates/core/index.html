@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="container mx-auto">
+    <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+        <h2 class="mb-12 text-2xl text-center font-semibold">Новые товары</h2>
+
+        <div class="grid grid-cols-3 gap-3">
+            {% for item in items %}
+            <div>
+                <a href="{% url 'item:detail' item.id %}">
+                    <div>
+                        <img src="{{ item.image.url }}" class="rounded-t-xl w-full">
+                    </div>
+
+                    <div class="p-6 bg-white rounded-b-xl">
+                        <h2 class="text-2xl truncate">{{ item.name }}</h2> 
+                        <p class="text-gray-500 pt-4">Цена: {{ item.price|floatformat:0 }} ₽</p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+        <h2 class="mb-12 text-2xl text-center font-semibold">Категории</h2>
+
+        <div class="grid grid-cols-3 gap-3">
+            {% for category in categories %}
+            <div>
+                <a href="{% url 'item:category' category.id %}">
+                    <div class="p-6 bg-white rounded-b-xl">
+                        <h2 class="text-2xl">{{ category.name }}</h2> 
+                        {% load word_filters %}
+                        <p class="text-gray-500">{{ category.items.count|pluralize:"товар,товара,товаров"}}</p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

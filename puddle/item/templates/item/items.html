@@ -1,0 +1,55 @@
+{% extends "core/base.html" %}
+
+{% block title %}Items{% endblock title %}
+
+{% block content %}
+    <div class="grid grid-cols-4 gap-4 container mx-auto">
+        <div class="col-span-1">
+            <form method="get" action="{% url 'item:items' %}" class="pl-2 pt-2">
+                <input name="query" class="w-full py-4 px-6 border rounded-xl" type="text" value="{{ query }}" placeholder="Найти книгу, стол...">
+
+                <button class="mt-2 py-4 px-8 text-lg bg-violet-500 text-white rounded-xl">Поиск</button>
+            </form>
+            <hr class="my-6">
+
+            <p class="font-semibold pl-2 text-2xl">Категории</p>
+
+            <ul class="pl-2">
+                {% for category in categories %}
+                    <li class="py-2 px-2 rounded-xl{% if category.id == category_id %} bg-gray-200{% endif %}">
+                        <a href="{% url 'item:items' %}?query={{ query }}&category={{ category.id }}">{% if category.id == category_id %}➤{% endif %}{{ category.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <hr class="my-6">
+
+            <p class="font-semibold pl-2 text-2xl">Отчистить фильтры</p>
+            <ul class="pl-2">
+                <li>
+                    <a href="{% url 'item:items' %}" class="mt-2 py-4 px-8 inline-block bg-gray-500 text-white rounded-xl text-lg hover:bg-gray-700">Отчистить</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-span-3 pt-2 pr-2">
+            <div class="grid grid-cols-3 gap-3 flash-animate">
+                {% for item in items %}
+                <div>
+                    <a href="{% url 'item:detail' item.id %}">
+                        <div>
+                            <img src="{{ item.image.url }}" class="rounded-t-xl">
+                        </div>
+    
+                        <div class="p-6 bg-white rounded-b-xl">
+                            <h2 class="text-2xl truncate">{{ item.name }}</h2> 
+                            <p class="text-gray-500 pt-4">Цена: {{ item.price|floatformat:0 }} ₽</p>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+

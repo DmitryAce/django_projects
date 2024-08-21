@@ -1,0 +1,68 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ item.name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto">
+    <div class="mt-4 flex gap-6 items-center w-full">
+        <div class="basis-[60%] shrink-1 grow-0">
+            <img src="{{ item.image.url }}" class="rounded-xl max-w-[500px]">
+        </div>
+
+        <div class="basis-[40%] shrink-1 grow-0 p-6 bg-gray-100 rounded-xl">
+            <h1 class="mb-6 text-3xl">{{ item.name }}</h1>
+            <p class="text-gray-500 pt-4">Цена: {{ item.price|floatformat:0 }} ₽</p>
+            <p class="text-gray-500"><strong>Продавец: </strong>{{ item.created_by.username }}</p>
+
+
+            {% if item.description %}
+            <p class="text-gray-700">
+                <strong class="text-gray-500">Описание:</strong><br>
+                {{ item.description }}
+            </p>
+            {% endif %}
+
+            {% if request.user == item.created_by %}
+                <div class="mt-6 p-6 bg-white rounded-xl">
+                    <p> Это ваш товар! </p>
+
+                    <a href="{% url 'item:edit' item.id %}" class="inline-block mt-6 px-6 py-3 text-lg font-semibold bg-violet-500 text-white rounded-xl">Изменить</a>
+                    <a href="{% url 'item:delete' item.created_by.id item.id %}" class="inline-block mt-6 px-6 py-3 text-lg font-semibold bg-red-500 text-white rounded-xl">Удалить</a>
+                </div>
+
+            {% elif request.user.is_superuser %}
+                <div class="mt-6 p-6 bg-white rounded-xl">
+                    <p> Вы <raw class="text-violet-500 font-bold">администратор</raw>, можете удалить этот товар! </p>
+
+                    <a href="{% url 'conversation:new' item.id %}" class="inline-block mt-6 px-6 py-3 text-lg font-semibold bg-violet-500 text-white rounded-xl hover:bg-violet-700">Написать продавцу</a>
+                    <a href="{% url 'item:delete' item.created_by.id item.id %}" class="inline-block mt-6 px-6 py-3 text-lg font-semibold bg-red-500 text-white rounded-xl">Удалить</a>     
+                </div>
+            {% else %}
+                <a href="{% url 'conversation:new' item.id %}" class="inline-block mt-6 px-6 py-3 text-lg font-semibold bg-violet-500 text-white rounded-xl hover:bg-violet-700">Написать продавцу</a>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+        <h2 class="mb-12 text-2xl text-center">Другие товары в категории {{ category }}. </h2>
+
+        <div class="grid grid-cols-3 gap-3 flash-animate">
+            {% for item in related_items %}
+            <div>
+                <a href="{% url 'item:detail' item.id %}">
+                    <div>
+                        <img src="{{ item.image.url }}" class="rounded-t-xl w-full">
+                    </div>
+
+                    <div class="p-6 bg-white rounded-b-xl">
+                        <h2 class="text-2xl truncate">{{ item.name }}</h2> 
+                        <p class="text-gray-500 pt-4">Цена: {{ item.price|floatformat:0 }} ₽</p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
