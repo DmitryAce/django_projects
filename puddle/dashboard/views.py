@@ -1,4 +1,7 @@
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.template.loader import render_to_string
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -7,6 +10,10 @@ from django.db.models import Count, Q
 from drf_yasg import openapi
 
 from item.models import Item, Category
+
+
+PAGINATION = 2
+
 
 item_list_response = openapi.Response(
     description="List of items",
@@ -59,10 +66,28 @@ def index(request):
     categories = categories.annotate(
         user_item_count=Count('items', filter=Q(items__created_by=request.user))
     )
+    
+    paginator = Paginator(items, PAGINATION)
+    page = request.GET.get('page')
+
+    try:
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render_to_string('item/items_list.html', {
+            'items': items,
+            'paginator': paginator,
+        })
+        return JsonResponse({'html': html})
 
     return render(request, 'dashboard/index.html', {
         'items': items,
         'categories': categories,
+        'paginator': paginator,
     })
 
 
@@ -87,8 +112,26 @@ def category(request, pk):
     categoryname = "Мои товары в категории "+str(Category.objects.get(pk=pk)).lower()
     items = Item.objects.filter(is_sold=False, category=pk, created_by=request.user)
     
+    paginator = Paginator(items, PAGINATION)
+    page = request.GET.get('page')
+
+    try:
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render_to_string('item/items_list.html', {
+            'items': items,
+            'paginator': paginator,
+        })
+        return JsonResponse({'html': html})
+
     return render(request, 'item/category.html', {
         'items': items,
         'categoryName': categoryName,
         'categoryname': categoryname,
+        'paginator': paginator,
     })

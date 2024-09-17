@@ -1,5 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
+from django.http import JsonResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.template.loader import render_to_string
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
@@ -7,6 +10,9 @@ from drf_yasg import openapi
 
 from .models import Item, Category
 from .forms import NewItemForm, EditItemForm
+
+
+PAGINATION = 2
 
 
 item_list_response = openapi.Response(
@@ -72,12 +78,32 @@ def items(request):
     
     if query:
         items = items.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    
+
+    paginator = Paginator(items, PAGINATION)
+    page = request.GET.get('page')
+
+    try:
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render_to_string('item/items_list.html', {
+            'items': items,
+            'paginator': paginator,
+            'categories': categories,
+            'category_id': int(category_id),
+        })
+        return JsonResponse({'html': html})
+
     return render(request, 'item/items.html', {
         'items': items,
         'query': query,
         'categories': categories,
         'category_id': int(category_id),
+        'paginator': paginator,
     })
 
 
@@ -183,8 +209,26 @@ def category(request, pk):
     categoryname = "Товары в категории "+str(Category.objects.get(pk=pk)).lower()
     items = Item.objects.filter(is_sold=False, category=pk)
     
+    paginator = Paginator(items, PAGINATION)
+    page = request.GET.get('page')
+
+    try:
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except EmptyPage:
+        items = paginator.page(paginator.num_pages)
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        html = render_to_string('item/items_list.html', {
+            'items': items,
+            'paginator': paginator,
+        })
+        return JsonResponse({'html': html})
+
     return render(request, 'item/category.html', {
         'items': items,
         'categoryName': categoryName,
         'categoryname': categoryname,
+        'paginator': paginator,
     })

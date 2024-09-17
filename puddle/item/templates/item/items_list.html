@@ -1,0 +1,19 @@
+{% load static %}
+{% if items %}
+    {% for item in items %}
+        <div>
+            <a href="{% url 'item:detail' item.id %}">
+                <div>
+                    <img src="{{ item.image.url }}" class="rounded-t-xl">
+                </div>
+
+                <div class="p-6 bg-white rounded-b-xl">
+                    <h2 class="text-2xl truncate">{{ item.name }}</h2> 
+                    <p class="text-gray-500 pt-4">Цена: {{ item.price|floatformat:0 }} ₽</p>
+                </div>
+            </a>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>Нет товаров.</p>
+{% endif %}

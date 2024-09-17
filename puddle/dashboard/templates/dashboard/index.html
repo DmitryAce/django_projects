@@ -7,22 +7,11 @@
     <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
         <h2 class="mb-12 text-2xl text-center font-semibold">Мои товары</h2>
 
-        <div class="grid grid-cols-3 gap-3">
-            {% for item in items %}
-            <div>
-                <a href="{% url 'item:detail' item.id %}">
-                    <div>
-                        <img src="{{ item.image.url }}" class="rounded-t-xl w-full">
-                    </div>
-
-                    <div class="p-6 bg-white rounded-b-xl">
-                        <h2 class="text-2xl truncate">{{ item.name }}</h2> 
-                        <p class="text-gray-500 pt-4">Цена: {{ item.price|floatformat:0 }} ₽</p>
-                    </div>
-                </a>
-            </div>
-            {% endfor %}
+        <div class="grid grid-cols-3 gap-3"  id="items-container">
+            {% include 'item/items_list.html' %}
         </div>
+
+        {% include "item/pagination.html" %}
     </div>
 
     <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
@@ -44,3 +33,33 @@
     </div>
 </div>
 {% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadItems(page) {
+            const query = new URLSearchParams(window.location.search).get('query') || '';
+            const category = new URLSearchParams(window.location.search).get('category') || 0;
+        
+            fetch(`?page=${page}&query=${query}&category=${category}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#items-container').innerHTML = data.html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        
+    
+        // Используем делегирование событий
+        document.querySelector('#items-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'A') {
+                event.preventDefault();
+                const page = new URL(event.target.href).searchParams.get('page');
+                loadItems(page);
+            }
+        });
+    });    
+</script>    
