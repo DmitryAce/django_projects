@@ -1,0 +1,270 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<!-- Hero Section Begin -->
+<section class="hero">
+    <div class="container">
+        <div class="hero__slider owl-carousel">
+            {% for anime in most_favorited_recently %}
+                <div class="hero__items set-bg" data-setbg="{{ anime.banner_image.url }}" style="color: black;">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="hero__text" style="color:black;">
+                                {% for theme in anime.theme.split %}
+                                    <div class="label">{{ theme|replace_underscore }}</div>
+                                {% endfor %}
+
+                                <h2>{{ anime.title }}</h2>
+                                <p>{{ anime.short_description }}</p>
+                                <a href="{% url 'anime:details' anime.id %}"><span>Смотреть</span> <i class="fa fa-angle-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+<!-- Hero Section End -->
+
+<!-- Product Section Begin -->
+<section class="product spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="trending__product">
+                    <div class="row">
+                        <div class="col-lg-8 col-md-8 col-sm-8">
+                            <div class="section-title">
+                                <h4>Сейчас в тренде</h4>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-4">
+                            <div class="btn__all">
+                                <a href="{% url "core:general" 'most_favorited_recently' %}" class="primary-btn">Посмотреть всё <span class="arrow_right"></span></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        {% for anime in most_favorited_recently %}
+                            <div class="col-lg-4 col-md-6 col-sm-6" style="padding-bottom:15px">
+                                <a href="{% url 'anime:details' anime.id %}" class="product__item">
+                                    <div class="product__item__pic set-bg" data-setbg="{{ anime.cover_image.url }}">
+                                        <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                        <div class="comment"><i class="fa fa-comments"></i> {{ anime.comment_count|humanize_number}}</div>
+                                        <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.views|humanize_number }}</div>
+                                    </div>
+                                    <div class="product__item__text">
+                                        <ul>
+                                            {% for genre in anime.genre.all  %}
+                                                <li><a href="{% url 'core:category' genre.id %}">{{ genre.name }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                        <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="popular__product">
+                    <div class="row">
+                        <div class="col-lg-8 col-md-8 col-sm-8">
+                            <div class="section-title">
+                                <h4>Популярные</h4>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-4">
+                            <div class="btn__all">
+                                <a href="{% url "core:general" 'top_viewed' %}" class="primary-btn">Посмотреть всё <span class="arrow_right"></span></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        {% for anime in top_viewed %}
+                            <div class="col-lg-4 col-md-6 col-sm-6" style="padding-bottom:15px">
+                                <a href="{% url 'anime:details' anime.id %}" class="product__item">
+                                    <div class="product__item__pic set-bg" data-setbg="{{ anime.cover_image.url }}">
+                                        <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                        <div class="comment"><i class="fa fa-comments"></i> {{ anime.comment_count|humanize_number}}</div>
+                                        <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.views|humanize_number }}</div>
+                                    </div>
+                                    <div class="product__item__text">
+                                        <ul>
+                                            {% for genre in anime.genre.all  %}
+                                                <li><a href="{% url 'core:category' genre.id %}">{{ genre.name }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                        <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="recent__product">
+                    <div class="row">
+                        <div class="col-lg-8 col-md-8 col-sm-8">
+                            <div class="section-title">
+                                <h4>Недавно добавленные</h4>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-4">
+                            <div class="btn__all">
+                                <a href="{% url "core:general" 'recently_added' %}" class="primary-btn">Посмотреть всё <span class="arrow_right"></span></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        {% for anime in recently_added %}
+                            <div class="col-lg-4 col-md-6 col-sm-6" style="padding-bottom:15px">
+                                <a href="{% url 'anime:details' anime.id %}" class="product__item">
+                                    <div class="product__item__pic set-bg" data-setbg="{{ anime.cover_image.url }}">
+                                        <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                        <div class="comment"><i class="fa fa-comments"></i> {{ anime.comment_count|humanize_number}}</div>
+                                        <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.views|humanize_number }}</div>
+                                    </div>
+                                    <div class="product__item__text">
+                                        <ul>
+                                            {% for genre in anime.genre.all  %}
+                                                <li><a href="{% url 'core:category' genre.id %}">{{ genre.name }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                        <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="live__product">
+                    <div class="row">
+                        <div class="col-lg-8 col-md-8 col-sm-8">
+                            <div class="section-title">
+                                <h4>Наиболее оцененные</h4>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-4">
+                            <div class="btn__all">
+                                <a href="{% url 'core:general' 'most_favorited' %}" class="primary-btn">Посмотреть всё <span class="arrow_right"></span></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        {% for anime in most_favorited %}
+                            <div class="col-lg-4 col-md-6 col-sm-6" style="padding-bottom:15px">
+                                <a href="{% url 'anime:details' anime.id %}" class="product__item">
+                                    <div class="product__item__pic set-bg" data-setbg="{{ anime.cover_image.url }}">
+                                        <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                        <div class="comment"><i class="fa fa-comments"></i> {{ anime.comment_count|humanize_number}}</div>
+                                        <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.views|humanize_number }}</div>
+                                    </div>
+                                    <div class="product__item__text">
+                                        <ul>
+                                            {% for genre in anime.genre.all  %}
+                                                <li><a href="{% url 'core:category' genre.id %}">{{ genre.name }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                        <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>    
+            <div class="col-lg-4 col-md-6 col-sm-8">
+                <div class="product__sidebar">
+                    <div class="product__sidebar__view">
+                        <div class="section-title">
+                            <h5>Топ просмотров</h5>
+                        </div>
+                        <ul class="filter__controls">
+                            <li class="active" data-filter=".day">День</li>
+                            <li data-filter=".week">Неделя</li>
+                            <li data-filter=".month">Месяц</li>
+                            <li data-filter=".year">Год</li>
+                        </ul>
+                        <div class="filter__gallery">
+                            {% for anime in top_daily_animes %}
+                                <div class="product__sidebar__view__item set-bg mix day"
+                                    data-setbg="{{ anime.banner_image.url }}"
+                                    onclick="location.href='{% url 'anime:details' anime.id %}'"
+                                    style="cursor: pointer;">
+                                    <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                    <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.daily_views|humanize_number }}</div>
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                </div> 
+                            {% endfor %}
+
+                        
+                            {% for anime in top_weekly_animes %}
+                                <div class="product__sidebar__view__item set-bg mix week"
+                                    data-setbg="{{ anime.banner_image.url }}"
+                                    onclick="location.href='{% url 'anime:details' anime.id %}'"
+                                    style="cursor: pointer;">
+                                    <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                    <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.weekly_views|humanize_number }}</div>
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                </div>
+                            {% endfor %}
+                        
+                            {% for anime in top_monthly_animes %}
+                                <div class="product__sidebar__view__item set-bg mix month"
+                                    data-setbg="{{ anime.banner_image.url }}"
+                                    onclick="location.href='{% url 'anime:details' anime.id %}'"
+                                    style="cursor: pointer;">
+                                    <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                    <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.monthly_views|humanize_number }}</div>
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                </div>
+                            {% endfor %}
+                        
+                            {% for anime in top_yearly_animes %}
+                                <div class="product__sidebar__view__item set-bg mix year"
+                                        data-setbg="{{ anime.banner_image.url }}">
+                                    <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                    <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.yearly_views|humanize_number }}</div>
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="product__sidebar__comment">
+                        <div class="section-title">
+                            <h5>Новые комментарии</h5>
+                        </div>
+                        {% for anime in commented_anime %}
+                            <div class="product__sidebar__comment__item">
+                                <div class="product__sidebar__comment__item__pic">
+                                    <a href="{% url 'anime:details' anime.id %}">
+                                        <img style="max-width:140px;" src="{{ anime.cover_image.url }}" alt="{{ anime.title|truncate }}">
+                                    </a>
+                                </div>
+                                <div class="product__sidebar__comment__item__text">
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                    <ul>
+                                        {% for genre in anime.genre.all %}
+                                            <li><a href="{% url 'core:category' genre.id %}" style="text-decoration:none; color:white;">{{ genre.name }}</a></li>
+                                        {% endfor %}
+                                    </ul>                                    
+                                    <span><i class="fa fa-eye"></i> {{ anime.view_count.views|humanize_number }}</span>
+                                    <span><i class="fa fa-comments"></i> {{ anime.comment_count|humanize_number }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock content %}

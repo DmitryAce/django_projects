@@ -1,0 +1,9 @@
+{% if request.user.is_authenticated %}
+    <a id="favorite-btn" class="follow-btn" href="#">
+        {% if is_favorited %}
+            <i class="fa fa-heart"></i> В ИЗБРАННОМ
+        {% else %}
+            <i class="fa fa-heart-o"></i> В ИЗБРАННОЕ
+        {% endif %}
+    </a>
+{% endif %}

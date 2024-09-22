@@ -1,0 +1,29 @@
+{% load static %}
+{% if user.is_authenticated %}
+    {% if user_rating %}
+        <!-- Пользователь уже поставил оценку -->
+        <p style="background:none; padding-top:15px; padding-left: 25px;">
+            <span>Ваша оценка: {{ user_rating.rating }}</span>
+            <form class="delete-rate-form justify-right" method="post" action="{% url 'anime:delete_rate' user_rating.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="site-btn">Удалить</button>
+            </form>            
+        </p>
+    {% else %}
+        <!-- Пользователь еще не оценил аниме -->
+        <p style="background:none; padding-top:15px; padding-left: 25px;"><span>Оценить ⭢</span></p>
+        <div class="post_rating">
+            <i class="fa fa-star-o" data-value="1" style="color: #838996;"></i>
+            <i class="fa fa-star-o" data-value="2" style="color: #838996;"></i>
+            <i class="fa fa-star-o" data-value="3" style="color: #838996;"></i>
+            <i class="fa fa-star-o" data-value="4" style="color: #838996;"></i>
+            <i class="fa fa-star-o" data-value="5" style="color: #838996;"></i>
+            <i class="fa fa-star-o" data-value="6" style="color: #838996;"></i>
+            <i class="fa fa-star-o" data-value="7" style="color: #838996;"></i>
+            <i class="fa fa-star-o" data-value="8" style="color: #838996;"></i>
+            <i class="fa fa-star-o" data-value="9" style="color: #838996;"></i>
+            <i class="fa fa-star-o" data-value="10" style="color: #838996;"></i>
+        </div>
+    {% endif %}
+{% endif %}

@@ -1,0 +1,100 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}Диалог с {{ recipient.username }} {% endblock %}
+
+{% block content %}
+<!-- Contacts Section Begin -->
+<section class="contacts spad">
+    <div class="container"> 
+        <div class="row" style="justify-content:center;">
+            <div class="col-lg-11">
+                <div class="contacts__list">
+                    <div class="section-title">
+                        <h4>ЧАТ С {{ recipient.username }}</h4>
+                    </div>
+                    <div id="messages-container">
+                        {% include "contacts/details_list.html" %}
+                    </div>
+                    <div class="form-container">
+                        <form id="message-form" method="post" action="{% url 'contacts:conversation' conversation.pk %}" class="form-group">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <input type="hidden" name="page" id="current-page" value="{{ messages.number }}">
+                            <button type="submit" class="site-btn">Отправить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>    
+        </div>
+    </div>
+</section>
+
+<style>
+    label {
+        color: white;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadMessages(page) {
+            fetch('?page=' + page, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#messages-container').innerHTML = data.html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        // Делегирование событий для пагинации
+        document.querySelector('#messages-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'A') {
+                event.preventDefault();
+                const page = new URL(event.target.href).searchParams.get('page');
+                loadMessages(page);
+            }
+        });
+    });        
+</script>    
+
+<script>
+    // Обработка отправки формы
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('#message-form');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Отключаем стандартную отправку формы
+    
+                const formData = new FormData(this);
+    
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Обновляем список сообщений
+                        document.querySelector('#messages-container').innerHTML = data.html;
+                        form.reset();
+                    } else {
+                        console.error('Error:', data.errors);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        } else {
+            console.error('Form not found.');
+        }
+    });    
+</script>
+
+{% endblock content %}

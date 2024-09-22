@@ -1,0 +1,84 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<!-- Normal Breadcrumb Begin -->
+<section class="normal-breadcrumb set-bg" data-setbg='{% static "img/normal-breadcrumb.jpg" %}'>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="normal__breadcrumb__text">
+                    <h2>Создать аккаунт</h2>
+                    <p>Добро пожаловать на Anime blog.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Normal Breadcrumb End -->
+
+<!-- Signup Section Begin -->
+<section class="signup spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="login__form">
+                    <h3>Регистрация</h3>
+                    <form method="post" action="{% url 'user:register' %}">
+                        {% csrf_token %}
+                        <div class="input__item">
+                            {{ form.email }}
+                            <span class="icon_mail"></span>
+                        </div>
+                        <div class="input__item">
+                            {{ form.username }}
+                            <span class="icon_profile"></span>
+                        </div>
+                        <div class="input__item">
+                            {{ form.password1 }}
+                            <span class="icon_lock"></span>
+                        </div>
+                        <div class="input__item">
+                            {{ form.password2 }}
+                            <span class="icon_lock"></span>
+                        </div>
+                        
+
+                        {% if form.errors %}
+                            <ul class="errorlist">
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        <li>{{ field.label }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        <button type="submit" class="site-btn">Создать</button>
+                    </form>
+                    <h5>Уже есть аккаунт? <a href="{% url 'user:login' %}">Войти!</a></h5>
+                </div>
+                
+            </div>
+            <div class="col-lg-6">
+                <div class="login__social__links">
+                    <h3>Войти с</h3>
+                    <ul>
+                        <li><a href="#" class="facebook"><i class="fa fa-facebook"></i>Войти с Facebook</a>
+                        </li>
+                        <li><a href="#" class="google"><i class="fa fa-google"></i>Войти с Google</a></li>
+                        <li><a href="#" class="twitter"><i class="fa fa-twitter"></i>Войти с Twitter</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Signup Section End -->
+{% endblock content %}

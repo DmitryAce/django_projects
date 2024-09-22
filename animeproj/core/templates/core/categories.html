@@ -1,0 +1,62 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}Категории{% endblock %}
+
+{% block content %}
+<!-- Contacts Section Begin -->
+<section class="contacts spad">
+    <div class="container">
+        <div class="row" style="justify-content:center; margin-bottom: 40px;">
+            <div class="col-lg-11">
+                <div class="contacts__list">
+                    <div class="section-title">
+                        <h4>Категории</h4>
+                    </div>
+                    <ul class="list-group">
+                        {% for category in categories %}
+                        <li class="list-group-item category-item d-flex justify-content-between align-items-center">
+                            <a href="{% url 'core:category' category.pk %}" class="category-link">
+                                {{ category.name }}
+                            </a>
+                            <span class="badge badge-primary badge-pill">{{ category.cnt }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadContacts(page) {
+            fetch('?page=' + page, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                document.querySelector('#contacts-container').innerHTML = data.html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        // Используем делегирование событий
+        document.querySelector('#contacts-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'A') {
+                event.preventDefault();
+                const page = new URL(event.target.href).searchParams.get('page');
+                loadContacts(page);
+            }
+        });
+    });    
+</script>    
+
+{% endblock content %}

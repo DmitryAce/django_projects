@@ -1,0 +1,192 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load anime_custom_filters %}
+
+{% block title %}{{ anime.title }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Begin -->
+<div class="breadcrumb-option">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb__links">
+                    <a class="category" href="{% url 'core:index' %}"><i class="fa fa-home"></i> Главная</a>
+                    <a class="category" href="./categories.html">Категории</a>
+                    {% for category in anime.genre.all %}
+                        <span>{% if not forloop.last %}<a class="categories" href="/#">{{ category }}</a>,{% else %}<a class="category" href="/#">{{ category }}</a>{% endif %}</span>
+                    {% endfor %}
+                    <a class="categories" href="{% url "anime:details" anime.id %}">{{ anime.title }}</a>
+                </div>                
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Anime Section Begin -->
+<section class="anime-details spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="anime__video__player">
+                    {% if current_episode %}
+                        <div class="section-title">
+                            <h5>{{ current_episode.episode }} Ep - {{ current_episode.title }}</h5>
+                        </div>
+                        <video id="player" playsinline controls data-poster="{{ anime.banner_image.url }}">
+                            <source src="{{ current_episode.video_file.url }}" type="video/mp4" />
+                            <!-- Captions are optional -->
+                            <track kind="captions" label="English captions" src="#" srclang="en" default />
+                        </video>
+                    {% else %}
+                        <p>Episode not found.</p>
+                    {% endif %}
+                </div>
+                <div class="anime__details__episodes">
+                    {% for season in seasons %}
+                        <div class="section-title">
+                            <h5>Сезон {{ season.season }}</h5>
+                        </div>
+                        {% if episodes_by_season %}
+                            {% with episodes=episodes_by_season|get_item:season.season %}
+                                {% if episodes %}
+                                    {% for episode in episodes %}
+                                        <a href="{% url "anime:watch" anime.id episode.id %}">{{ episode.episode }} Ep</a>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    {% endfor %}
+                </div>                                
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-8 col-md-8">
+
+                <div class="anime__details__review">
+                    <div class="section-title">
+                        <h5>Отзывы</h5>
+                    </div>
+                    <div id="comments-container">
+                        {% include 'anime/comments_list.html' %}
+                    </div>
+                </div>
+                                   
+                <div class="anime__details__form">
+                    {% if user.is_authenticated %}
+                        {% if user_comment %}
+                            <div class="section-title">
+                                <h5>Ваш отзыв</h5>
+                            </div>
+                            <div class="anime__review__item">
+                                <div class="anime__review__item__pic">
+                                    {% if profile.profile_image %}
+                                        <img src="{{ profile.profile_image.url }}" alt="Profile Avatar" class="img-fluid rounded-circle avatar-image">
+                                    {% else %}
+                                        <img src="{% static 'img/default-avatar.jpg' %}" alt="Default Avatar" class="img-fluid rounded-circle avatar-image">
+                                    {% endif %}
+                                </div>
+                                <div class="anime__review__item__text ">
+                                    {% load humanize %}
+                                    <h6>{{ user.username }} - <span>{{ user_comment.created_at|naturaltime }}</span></h6>
+                                    <p>{{ user_comment.body }}</p>
+                                </div>
+                            </div>
+                            <form class="delete-comment-form justify-right" method="post" action="{% url 'anime:watch/delete_comment' anime.id current_episode.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="site-btn" style="margin-bottom: 30px;">Удалить</button>
+                            </form>                                
+                                                                                        
+                        {% else %}
+                            <div class="section-title">
+                                <h5>Ваш отзыв</h5>
+                            </div>
+    
+                            <form method="post" action="{% url 'anime:watch' anime.id current_episode.id %}">
+                                {% csrf_token %}
+                                {{ form.body }}      
+                                
+                                {% if form.errors %}
+                                    <ul class="errorlist" style="margin-bottom: 24px;">
+                                        {% for field in form %}
+                                            {% for error in field.errors %}
+                                                <li>{{ field.label }}: {{ error }}</li>
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {% for error in form.non_field_errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            
+                                <button type="submit"><i class="fa fa-location-arrow"></i> Отправить</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div class="section-title">
+                            <h5>Хотите оставить отзыв?</h5>
+                        </div>
+                        <a href="{% url 'user:login' %}" class="site-btn" style="margin-bottom: 30px;">Войдите в аккаунт!</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Anime Section End -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.delete-comment-form').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // Перезагрузите страницу после успешного удаления
+                    } else {
+                        alert('Произошла ошибка при удалении комментария.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    });    
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadComments(page) {
+            fetch('?page=' + page, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#comments-container').innerHTML = data.html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        // Используем делегирование событий
+        document.querySelector('#comments-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'A') {
+                event.preventDefault();
+                const page = new URL(event.target.href).searchParams.get('page');
+                loadComments(page);
+            }
+        });
+    });    
+</script>    
+{% endblock content %}

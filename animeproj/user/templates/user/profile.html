@@ -1,0 +1,104 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<!-- Profile Section Begin -->
+<section class="profile spad">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 text-center">
+                <div class="profile__avatar d-flex justify-content-center align-items-center">
+                    {% if profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}" alt="Profile Avatar" class="img-fluid rounded-circle avatar-image">
+                    {% else %}
+                        <img src="{% static 'img/default-avatar.jpg' %}" alt="Default Avatar" class="img-fluid rounded-circle avatar-image">
+                    {% endif %}
+                </div>                    
+                <div class="profile__info mt-3">
+                    <h3 style="color:#F9F9F9;">{{ user.username }}</h3>
+                </div>
+                <div class="profile__info mt-3">
+                    <h4 style="color:#F9F9F9;">На платформе с: {{ user.date_joined|date:"d E Y" }}</h4>
+                </div>
+                {% if user == request.user %}
+                    <div class="profile__actions mt-3">
+                        <form method="post" action="{% url 'user:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="site-btn">Выйти</button>
+                        </form>
+                    </div>
+                    <div class="profile__image-upload mt-3">
+                        <form method="post" action="{% url 'user:profile' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <label for="profile_image" class="site-btn">Выбрать файл</label>
+                            <input id="profile_image" type="file" name="profile_image" style="display: none;">
+                            <button type="submit" class="site-btn">Сменить изображение</button>
+                        </form>                    
+                    </div> 
+                {% else %}
+                    {% if request.user.is_authenticated %}
+                        <div class="profile__actions mt-3">
+                            <a href="{% url 'contacts:new' user.id %}" class="site-btn">Написать сообщение</a> 
+                        </div>
+                    {% endif %}    
+                {% endif %}                                      
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Profile Section End -->
+
+<!-- Product Section Begin -->
+{% if animes %}
+    <section class="product spad">
+        <div class="container">
+            <div class="row" style="justify-content:center;">
+                <div class="col-lg-11">
+                    <div class="trending__product">
+                        <div class="product__page__title">
+                            <div class="product__page__header">
+                                <div class="section-title">
+                                    <h4>ИЗБРАННОЕ</h4>
+                                </div>                    
+                            </div>
+                        </div>
+                        <div id="anime-container">
+                            {% include 'core/general_list.html' %}
+                        </div>
+                    </div>
+                </div>    
+            </div>
+        </div>
+    </section>
+{% endif %}
+<!-- Product Section End -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadComments(page) {
+            fetch(`?page=${page}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#anime-container').innerHTML = data.html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        document.querySelector('#anime-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'A' && event.target.id !== 'unlock') {
+                event.preventDefault();
+                const page = new URL(event.target.href).searchParams.get('page');
+                loadComments(page);
+            }
+        });
+    });    
+</script>
+
+{% endblock content %}

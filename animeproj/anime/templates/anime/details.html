@@ -1,0 +1,489 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% load anime_custom_filters %}
+
+{% block title %}{{ anime.title }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Begin -->
+<div class="breadcrumb-option">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb__links">
+                    <a class="category" href="{% url 'core:index' %}"><i class="fa fa-home"></i> Главная</a>
+                    <a class="category" href="./categories.html">Категории</a>
+                    {% for category in anime.genre.all %}
+                        <span><a class="categories" href="{% url 'core:category' category.id %}">{{ category }}</a>{% if not forloop.last %},{% endif %}</span>
+                    {% endfor %}
+                </div>                
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Anime Section Begin -->
+<section class="anime-details spad">
+    <div class="container">
+        <div class="anime__details__content">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="anime__details__pic set-bg" data-setbg='{{ anime.cover_image.url }}'>
+                        <div class="comment"><i class="fa fa-comments"></i> {{ anime.comment_count|humanize_number}}</div>
+                        <div class="view"><i class="fa fa-eye"></i> {{anime.view_count.views|humanize_number}}</div>
+                    </div>
+                </div>
+                <div class="col-lg-9">
+                    <div class="anime__details__text">
+                        <div class="anime__details__title">
+                            <h3>{{ anime.title }}</h3>
+                            <span>{{ anime.original_title_japanese }}</span>
+                        </div>
+                        <div class="anime__details__rating">
+                            <div class="rating" id="rating-stars"></div>
+                            <span> 
+                                {% if anime.rating_count == 0 %}
+                                    <raw class="votes">0 голосов</raw>
+                                {% else %}
+                                    <raw class="votes"><b id="ratingValue">{{ anime.rating|floatformat:2 }} </b>{{ anime.rating_count|humanize_number|pluralize_number:"голос" }}</raw>
+                                {% endif %}      
+                            </span>                                
+                        </div>
+                        
+                        <p>{{ anime.description }}</p>
+                        <div class="anime__details__widget">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6">
+                                    <ul>
+                                        <li><span>Тип:</span>{{ anime.type }}</li>
+                                        <li style="display: flex;">
+                                            <span style="min-width:115px;">
+                                                Студия:
+                                            </span>
+                                            <div>{{ anime.studio }}</div>
+                                        </li>
+                                        <li><span>Дата выхода:</span>{{ anime.release_date }}</li>
+                                        <li><span>Статус:</span>{{ anime.status }}</li>
+                                        <li style="display: flex;">
+                                            <span style="min-width:115px;">
+                                                {% if anime.genre.count > 1 %}
+                                                    Жанры:
+                                                {% else %}
+                                                    Жанр:
+                                                {% endif %}
+                                            </span>
+                                            <div>{{ anime.genre.all|listjoin }}</div>
+                                        </li>                                        
+                                    </ul>
+                                </div>
+                                <div class="col-lg-6 col-md-6">
+                                    <ul>
+                                        <li style="display: flex;">
+                                            <span style="min-width:115px;">
+                                                {% if anime.theme.count > 1 %}
+                                                    Темы:
+                                                {% elif anime.theme.count == 0 %}
+                                                    Тема:
+                                                {% else %}
+                                                    Тема: 
+                                                {% endif %}
+                                            </span>
+                                            {% if anime.theme.count > 0 %}
+                                                <div>{{ anime.theme.all|listjoin }}</div>
+                                            {% else %}
+                                            <div>-</div>
+                                            {% endif %}
+                                        </li>
+                                        <li><span>Рейтинг:</span>{% if anime.rating_count == 0 %}0 голосов{% else %}{{ anime.rating|floatformat:2 }} / {{ anime.rating_count|humanize_number|pluralize_number:"голос" }}{% endif %}</li>
+                                        <li><span>Длительность:</span>24 мин/эп</li>
+                                        <li><span>Качество:</span>{{anime.quality}}</li>
+                                        <li><span>Просмотры:</span>{{anime.view_count.views|humanize_number}}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="anime__details__btn">
+                            <div class="anime__details__btns">
+                                {% include "anime/favorite.html" %}
+                                {% if first_episode %}
+                                    <a href="{% url 'anime:watch' anime.id first_episode.pk %}" class="details watch-btn"><span>Смотреть</span> <i class="fa fa-angle-right"></i></a>
+                                {% endif %}
+                            </div>
+                            {% include 'anime/details_rating.html' %}  
+                        </div>     
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 40px">
+                <div class="col-lg-8 col-md-8">
+
+                    <div class="anime__details__review">
+                        <div class="section-title">
+                            <h5>Отзывы</h5>
+                        </div>
+                        <div id="comments-container">
+                            {% include 'anime/comments_list.html' %}
+                        </div>
+                    </div>
+                                       
+                    <div class="anime__details__form">
+                        {% if user.is_authenticated %}
+                            {% if user_comment %}
+                                <div class="section-title">
+                                    <h5>Ваш отзыв</h5>
+                                </div>
+                                <div class="anime__review__item">
+                                    <div class="anime__review__item__pic">
+                                        {% if profile.profile_image %}
+                                            <img src="{{ profile.profile_image.url }}" alt="Profile Avatar" class="img-fluid rounded-circle avatar-image">
+                                        {% else %}
+                                            <img src="{% static 'img/default-avatar.jpg' %}" alt="Default Avatar" class="img-fluid rounded-circle avatar-image">
+                                        {% endif %}
+                                    </div>
+                                    <div class="anime__review__item__text ">
+                                        {% load humanize %}
+                                        <h6>{{ user.username }} - <span>{{ user_comment.created_at|naturaltime }}</span></h6>
+                                        <p>{{ user_comment.body }}</p>
+                                    </div>
+                                </div>
+                                <form class="delete-comment-form justify-right" method="post" action="{% url 'anime:delete_comment' anime.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="site-btn">Удалить</button>
+                                </form>                                
+                                                                                            
+                            {% else %}
+                                <div class="section-title">
+                                    <h5>Ваш отзыв</h5>
+                                </div>
+        
+                                <form method="post" action="{% url 'anime:details' anime.id %}">
+                                    {% csrf_token %}
+                                    {{ form.body }}      
+                                    
+                                    {% if form.errors %}
+                                        <ul class="errorlist" style="margin-bottom: 24px;">
+                                            {% for field in form %}
+                                                {% for error in field.errors %}
+                                                    <li>{{ field.label }}: {{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                            {% for error in form.non_field_errors %}
+                                                <li>{{ error }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                
+                                    <button type="submit"><i class="fa fa-location-arrow"></i> Отправить</button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <div class="section-title">
+                                <h5>Хотите оставить отзыв?</h5>
+                            </div>
+                            <a href="{% url 'user:login' %}" class="site-btn">Войдите в аккаунт!</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="anime__details__sidebar">
+                        <div class="section-title">
+                            <h5>может понравиться...</h5>
+                        </div>
+                        {% for anime in might_like%}
+                            <div class="product__sidebar__view__item set-bg mix day"
+                                data-setbg="{{ anime.banner_image.url }}"
+                                onclick="location.href='{% url 'anime:details' anime.id %}'"
+                                style="cursor: pointer;">
+                                <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.daily_views|humanize_number }}</div>
+                                <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                            </div> 
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Anime Section End -->
+
+<!-- Scripts -->
+<style>
+    .rating {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ratingStars = document.getElementById('rating-stars');
+        const rating = parseFloat("{{ anime.rating|floatformat:'-1' }}");
+        const ratingCount = {{ anime.rating_count }}; 
+    
+        if (ratingCount == 0) {
+            ratingStars.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                ratingStars.innerHTML += `<i class="fa fa-star-o" style="color: #838996;"></i>`;
+            }
+            return;
+        }
+    
+        const colors = {
+            0: '#EB4C42',
+            1: '#EB4C42',
+            2: '#EB4C42',
+            3: '#EB4C42',
+            4: '#EB4C42',
+            5: '#838996',
+            6: '#838996',
+            7: '#50C878',
+            8: '#50C878',
+            9: '#E89F12',
+            10: '#E89F12'
+        };
+    
+        let fullStars = Math.floor(rating / 2);
+        let halfStar = (rating % 2) >= 1 ? 1 : 0;
+        let emptyStars = 5 - fullStars - halfStar;
+    
+        const color = colors[Math.floor(rating)];
+    
+        ratingStars.innerHTML = '';
+    
+        for (let i = 0; i < fullStars; i++) {
+            ratingStars.innerHTML += `<i class="fa fa-star" style="color: ${color};"></i>`;
+        }
+    
+        if (halfStar) {
+            ratingStars.innerHTML += `<i class="fa fa-star-half-o" style="color: ${color};"></i>`;
+        }
+    
+        for (let i = 0; i < emptyStars; i++) {
+            ratingStars.innerHTML += `<i class="fa fa-star-o" style="color: ${color};"></i>`;
+        }
+    
+        const ratingValue = document.getElementById('rating-value');
+        if (ratingValue) {
+            ratingValue.style.color = color;
+        }
+    });     
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.delete-comment-form').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Произошла ошибка при удалении комментария.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    });    
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadComments(page) {
+            fetch('?page=' + page, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                document.querySelector('#comments-container').innerHTML = data.html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        // Используем делегирование событий
+        document.querySelector('#comments-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'A') {
+                event.preventDefault();
+                const page = new URL(event.target.href).searchParams.get('page');
+                loadComments(page);
+            }
+        });
+    });    
+</script>    
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const animeId = '{{ anime.id }}';
+    
+        const colors = {
+            1: '#EB4C42',
+            2: '#EB4C42',
+            3: '#EB4C42',
+            4: '#EB4C42',
+            5: '#838996',
+            6: '#838996',
+            7: '#50C878',
+            8: '#50C878',
+            9: '#E89F12',
+            10: '#E89F12'
+        };
+    
+        const stars = document.querySelectorAll('.post_rating i');
+        let selectedRating = 0;
+    
+        stars.forEach((star, index) => {
+            star.addEventListener('mouseenter', function() {
+                const color = colors[star.getAttribute('data-value')];
+                for (let i = 0; i <= index; i++) {
+                    stars[i].style.color = color;
+                    stars[i].classList.remove('fa-star-o');
+                    stars[i].classList.add('fa-star');
+                }
+            });
+    
+            star.addEventListener('mouseleave', function() {
+                for (let i = 0; i < stars.length; i++) {
+                    if (i < selectedRating) {
+                        const color = colors[stars[i].getAttribute('data-value')];
+                        stars[i].style.color = color;
+                        stars[i].classList.remove('fa-star-o');
+                        stars[i].classList.add('fa-star');
+                    } else {
+                        stars[i].style.color = '#838996';
+                        stars[i].classList.remove('fa-star');
+                        stars[i].classList.add('fa-star-o');
+                    }
+                }
+            });
+        });
+
+        // Получаем CSRF-токен из cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        stars.forEach((star, index) => {
+            star.addEventListener('click', function() {
+                const rating = star.getAttribute('data-value');
+                console.log('Selected rating:', rating);
+
+                fetch(`/anime/${animeId}/${rating}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ rating: rating })
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Ошибка при сохранении оценки.');
+                    }
+                });
+            });
+        });
+
+        const favoriteBtn = document.getElementById('favorite-btn');
+
+        favoriteBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+    
+            const animeId = this.getAttribute('data-id');
+            const isFavorited = this.querySelector('i').classList.contains('fa-heart');
+            const action = isFavorited ? 'remove' : 'add';
+    
+            fetch(`{% url "anime:toggle_favorite" anime.id %}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken') // Ensure you have CSRF token for POST requests
+                },
+                body: JSON.stringify({ action: action })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const icon = favoriteBtn.querySelector('i');
+                    const textNode = favoriteBtn.childNodes[2]; // Получаем текстовый узел
+                    
+                    if (isFavorited) {
+                        icon.classList.remove('fa-heart');
+                        icon.classList.add('fa-heart-o');
+                        textNode.nodeValue = ' В ИЗБРАННОЕ';
+                    } else {
+                        icon.classList.remove('fa-heart-o');
+                        icon.classList.add('fa-heart');
+                        textNode.nodeValue = ' В ИЗБРАННОМ';
+                    }
+                } else {
+                    console.error('Ошибка при выполнении запроса.');
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
+        });    
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.delete-rate-form').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();  // Prevent the default form submission
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Произошла ошибка при удалении оценки.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    });
+      
+</script>
+
+
+{% endblock content %}
+

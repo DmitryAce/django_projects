@@ -1,0 +1,49 @@
+{% load static %}
+{% load custom_filters %}
+
+<div class="row">
+    {% for anime in animes %}  
+        <div class="col-lg-4 col-md-6 col-sm-6" style="padding-bottom:15px">
+            <a href="{% url 'anime:details' anime.id %}" class="product__item">
+                <div class="product__item__pic">
+                    <img src="{{ anime.cover_image.url }}" class="product__item__img" />
+                    <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                    <div class="comment"><i class="fa fa-comments"></i> {{ anime.comment_count|humanize_number }}</div>
+                    <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.views|humanize_number }}</div>
+                </div>
+                <div class="product__item__text">
+                    <ul>
+                        {% for genre in anime.genre.all  %}
+                            <li><a href="{% url 'core:category' genre.id %}" id="unlock">{{ genre.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                </div>
+            </a>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="product__pagination justify-center">
+    {% if animes.has_previous %}
+        <a href="?page=1" class="pagination__item">««</a>
+        <a href="?page={{ animes.previous_page_number }}" class="pagination__item">«</a>
+    {% else %}
+        <raw href="#" class="pagination__item--disabled">««</raw>
+        <raw href="#" class="pagination__item--disabled">«</raw>
+    {% endif %}
+    {% for num in animes.paginator.page_range %}
+        {% if animes.number == num %}
+            <a href="?page={{ num }}" class="pagination__item current-page">{{ num }}</a>
+        {% elif num > animes.number|add:'-4' and num < animes.number|add:'5' %}
+            <a href="?page={{ num }}" class="pagination__item">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if animes.has_next %}
+        <a href="?page={{ animes.next_page_number }}" class="pagination__item">»</a>
+        <a href="?page={{ animes.paginator.num_pages }}" class="pagination__item">»»</a>
+    {% else %}
+        <raw href="" class="pagination__item--disabled">»</raw>
+        <raw href="" class="pagination__item--disabled">»»</raw>
+    {% endif %}
+</div>

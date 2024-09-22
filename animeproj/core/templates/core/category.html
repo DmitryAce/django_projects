@@ -1,0 +1,170 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %} {{ category.name }} {% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Begin -->
+<div class="breadcrumb-option">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb__links">
+                    <a class="category" href="{% url 'core:index' %}"><i class="fa fa-home"></i> Главная</a>
+                    <a class="category" href="#">Категории</a>
+                    <span><a class="categories" href="{% url 'core:category' category.id %}">{{ category.name }}</a></span>
+                </div>                
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Product Section Begin -->
+<section class="product spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="trending__product">
+                    <div class="product__page__title">
+                        <div class="product__page__header">
+                            <div class="section-title">
+                                <h4>{{ category.name }}</h4>
+                            </div>
+                            <div class="product__page__filter">
+                                <p>Сортировать:</p>
+                                <form method="get" id="sortForm">
+                                    <select name="order_by" onchange="document.getElementById('sortForm').submit()">
+                                        <option value="title" {% if request.GET.order_by == "title" %}selected{% endif %}>А-Я</option>
+                                        <option value="view_count" {% if request.GET.order_by == "view_count" %}selected{% endif %}>Просмотры</option>
+                                        <option value="release_date" {% if request.GET.order_by == "release_date" %}selected{% endif %}>Дата выхода</option>
+                                    </select>
+                                </form>
+                            </div>                          
+                        </div>
+                    </div>
+                    <div id="anime-container">
+                        {% include 'core/anime_list.html' %}
+                    </div>
+                </div>
+            </div>    
+            <div class="col-lg-4 col-md-6 col-sm-8">
+                <div class="product__sidebar">
+                    <!-- Top Viewed Anime -->
+                    <div class="product__sidebar__view">
+                        <div class="section-title">
+                            <h5>Топ просмотров</h5>
+                        </div>
+                        <ul class="filter__controls">
+                            <li class="active" data-filter=".day">День</li>
+                            <li data-filter=".week">Неделя</li>
+                            <li data-filter=".month">Месяц</li>
+                            <li data-filter=".year">Год</li>
+                        </ul>
+                        <div class="filter__gallery">
+                            {% for anime in top_daily_animes %}
+                                <div class="product__sidebar__view__item set-bg mix day"
+                                    data-setbg="{{ anime.banner_image.url }}"
+                                    onclick="location.href='{% url 'anime:details' anime.id %}'"
+                                    style="cursor: pointer;">
+                                    <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                    <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.daily_views|humanize_number }}</div>
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                </div> 
+                            {% endfor %}
+
+                            {% for anime in top_weekly_animes %}
+                                <div class="product__sidebar__view__item set-bg mix week"
+                                    data-setbg="{{ anime.banner_image.url }}"
+                                    onclick="location.href='{% url 'anime:details' anime.id %}'"
+                                    style="cursor: pointer;">
+                                    <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                    <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.weekly_views|humanize_number }}</div>
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                </div>
+                            {% endfor %}
+
+                            {% for anime in top_monthly_animes %}
+                                <div class="product__sidebar__view__item set-bg mix month"
+                                    data-setbg="{{ anime.banner_image.url }}"
+                                    onclick="location.href='{% url 'anime:details' anime.id %}'"
+                                    style="cursor: pointer;">
+                                    <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                    <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.monthly_views|humanize_number }}</div>
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                </div>
+                            {% endfor %}
+
+                            {% for anime in top_yearly_animes %}
+                                <div class="product__sidebar__view__item set-bg mix year"
+                                    data-setbg="{{ anime.banner_image.url }}">
+                                    <div class="ep">{{ anime.available_episodes }} / {{ anime.max_episodes }}</div>
+                                    <div class="view"><i class="fa fa-eye"></i> {{ anime.view_count.yearly_views|humanize_number }}</div>
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- New Comments -->
+                    <div class="product__sidebar__comment">
+                        <div class="section-title">
+                            <h5>Новые комментарии</h5>
+                        </div>
+                        {% for anime in commented_anime %}
+                            <div class="product__sidebar__comment__item">
+                                <div class="product__sidebar__comment__item__pic">
+                                    <a href="{% url 'anime:details' anime.id %}">
+                                        <img style="max-width:140px;" src="{{ anime.cover_image.url }}" alt="{{ anime.title|truncate }}">
+                                    </a>
+                                </div>
+                                <div class="product__sidebar__comment__item__text">
+                                    <h5><a href="{% url 'anime:details' anime.id %}">{{ anime.title|truncate }}</a></h5>
+                                    <ul>
+                                        {% for genre in anime.genre.all %}
+                                            <li><a href="{% url 'core:category' genre.id %}" style="text-decoration:none; color:white;">{{ genre.name }}</a></li>
+                                        {% endfor %}
+                                    </ul>                                    
+                                    <span><i class="fa fa-eye"></i> {{ anime.view_count.views|humanize_number }}</span>
+                                    <span><i class="fa fa-comments"></i> {{ anime.comment_count|humanize_number }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Product Section End -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedOrderBy = '{{ selected_order_by }}';
+
+        function loadComments(page) {
+            fetch(`?page=${page}&order_by=${selectedOrderBy}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#anime-container').innerHTML = data.html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        document.querySelector('#anime-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'A' && event.target.id !== 'unlock') {
+                event.preventDefault();
+                const page = new URL(event.target.href).searchParams.get('page');
+                loadComments(page);
+            }
+        });
+    });    
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}blog_post.title{% endblock %}
+
+{% block content %}
+<!-- Blog Details Section Begin -->
+<section class="blog-details spad">
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-lg-8">
+                <div class="blog__details__title">
+                    <h6>Опубликовано <span>- {{ blog_post.created_at|date:"F d, Y" }}</span></h6>
+                    <h2>{{ blog_post.title }}</h2>
+                    <div class="blog__details__social">
+                        <a href="#" class="facebook"><i class="fa fa-facebook-square"></i> Facebook</a>
+                        <a href="#" class="pinterest"><i class="fa fa-pinterest"></i> Pinterest</a>
+                        <a href="#" class="linkedin"><i class="fa fa-linkedin-square"></i> Linkedin</a>
+                        <a href="#" class="twitter"><i class="fa fa-twitter-square"></i> Twitter</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="blog__details__pic">
+                    {% if blog_post.header_image %}
+                        <img src="{{ blog_post.header_image.url }}" alt="">
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="blog__details__content">
+                    {% for block in content_blocks %}
+                        <div class="blog__details__item__text">
+                            {% if block.header %}
+                                <h4>{{ block.header }}</h4>
+                            {% endif %}
+                            {% if block.image %}
+                                <img src="{{ block.image.url }}" alt="">
+                            {% endif %}
+                            {% if block.text %}
+                                <p>{{ block.text }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-lg-8 col-md-8">
+
+                <div class="anime__details__review">
+                    <div class="section-title">
+                        <h5>Отзывы</h5>
+                    </div>  
+                    <div id="comments-container">
+                        {% include 'anime/comments_list.html' %}
+                    </div>
+                </div>
+                                    
+                <div class="anime__details__form" style="margin-bottom: 50px;">
+                    {% if user.is_authenticated %}
+                        {% if user_comment %}
+                            <div class="section-title">
+                                <h5>Ваш отзыв</h5>
+                            </div>
+                            <div class="anime__review__item">
+                                <div class="anime__review__item__pic">
+                                    {% if profile.profile_image %}
+                                        <img src="{{ profile.profile_image.url }}" alt="Profile Avatar" class="img-fluid rounded-circle avatar-image">
+                                    {% else %}
+                                        <img src="{% static 'img/default-avatar.jpg' %}" alt="Default Avatar" class="img-fluid rounded-circle avatar-image">
+                                    {% endif %}
+                                </div>
+                                <div class="anime__review__item__text ">
+                                    {% load humanize %}
+                                    <h6>{{ user.username }} - <span>{{ user_comment.created_at|naturaltime }}</span></h6>
+                                    <p>{{ user_comment.body }}</p>
+                                </div>
+                            </div>
+                            <form class="delete-comment-form justify-right" method="post" action="{% url 'blog:delete_comment' blog_post.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="site-btn">Удалить</button>
+                            </form>                                
+                                                                                        
+                        {% else %}
+                            <div class="section-title">
+                                <h5>Ваш отзыв</h5>
+                            </div>
+    
+                            <form method="post" action="{% url 'blog:blog_details' blog_post.id %}">
+                                {% csrf_token %}
+                                {{ form.body }}      
+                                
+                                {% if form.errors %}
+                                    <ul class="errorlist" style="margin-bottom: 24px;">
+                                        {% for field in form %}
+                                            {% for error in field.errors %}
+                                                <li>{{ field.label }}: {{ error }}</li>
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {% for error in form.non_field_errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            
+                                <button type="submit"><i class="fa fa-location-arrow"></i> Отправить</button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div class="section-title">
+                            <h5>Хотите оставить отзыв?</h5>
+                        </div>
+                        <a href="{% url 'user:login' %}" class="site-btn">Войдите в аккаунт!</a>
+                    {% endif %}
+                </div>
+        </div>
+    </div>
+</section>
+<!-- Blog Details Section End -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadComments(page) {
+            fetch('?page=' + page, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                document.querySelector('#comments-container').innerHTML = data.html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        // Используем делегирование событий
+        document.querySelector('#comments-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'A') {
+                event.preventDefault();
+                const page = new URL(event.target.href).searchParams.get('page');
+                loadComments(page);
+            }
+        });
+    });    
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.delete-comment-form').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Произошла ошибка при удалении комментария.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    });    
+</script>
+{% endblock content %}

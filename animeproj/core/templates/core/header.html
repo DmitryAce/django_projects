@@ -1,0 +1,47 @@
+{% load static %}
+<!-- Header Section Begin -->
+<header class="header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-2">
+                <div class="header__logo">
+                    <a href="/">
+                        <img src='{% static "img/logo.png" %}' alt="">
+                    </a>
+                    <a href="#" class="search-switch"><span class="icon_search"></span></a>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="header__nav">
+                    <nav class="header__menu mobile-menu">
+                        <ul>
+                            <li {% if request.path == '/' %}class="active"{% endif %}><a href="{% url 'core:index' %}">Главная</a></li>
+                            <li {% if 'categories' in request.path %}class="active"{% endif %}><a href="{% url 'core:categories' %}">Категории</a></li>
+                            <li {% if 'blog' in request.path %}class="active"{% endif %}><a href="{% url 'blog:blog' %}">Наш Блог</a></li>
+                            <li {% if 'contacts' in request.path %}class="active"{% endif %}><a href={% if request.user.is_authenticated %}"{% url 'contacts:contacts' %}"{% else %}"{% url 'user:login' %}"{% endif %}>Контакты</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-lg-2">
+                <div class="header__right">
+                    {% if request.user.is_authenticated %}
+                        <a href="{% url 'core:index' %}" class="user-name">{{ request.user.username }}</a>
+                        <a href="{% url 'user:profile_view' request.user.id %}">
+                            {% if request.user.userprofile.profile_image %}
+                                <img src="{{ request.user.userprofile.profile_image.url }}" alt="Profile Avatar" class="img-fluid rounded-circle avatar-image" style="width:30px; height:30px;">
+                            {% else %}
+                                <img src="{% static 'img/default-avatar.jpg' %}" alt="Default Avatar" class="img-fluid rounded-circle avatar-image" style="width:30px; height:30px;">
+                            {% endif %}
+                        </a>
+                    {% else %}
+                    <a href="{% url 'user:login' %}" class="user-name">Войти</a>
+                        <a href="{% url 'user:login' %}"><span class="icon_profile"></span></a>
+                    {% endif %}                
+                </div>
+            </div>            
+        </div>
+        <div id="mobile-menu-wrap"></div>
+    </div>
+</header>
+<!-- Header End -->

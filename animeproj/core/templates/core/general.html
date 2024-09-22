@@ -1,0 +1,70 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %} {{ title }} {% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Begin -->
+<div class="breadcrumb-option">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb__links">
+                    <a class="category" href="{% url 'core:index' %}"><i class="fa fa-home"></i> Главная</a>
+                    <p class="categories" href="#">{{ title }}</p>
+                </div>                
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Breadcrumb End -->
+
+<!-- Product Section Begin -->
+<section class="product spad">
+    <div class="container">
+        <div class="row" style="justify-content:center;">
+            <div class="col-lg-11">
+                <div class="trending__product">
+                    <div class="product__page__title">
+                        <div class="product__page__header">
+                            <div class="section-title">
+                                <h4>{{ title }}</h4>
+                            </div>                    
+                        </div>
+                    </div>
+                    <div id="anime-container">
+                        {% include 'core/general_list.html' %}
+                    </div>
+                </div>
+            </div>    
+        </div>
+    </div>
+</section>
+<!-- Product Section End -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadComments(page) {
+            fetch(`?page=${page}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#anime-container').innerHTML = data.html;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        document.querySelector('#anime-container').addEventListener('click', function(event) {
+            if (event.target.tagName === 'A' && event.target.id !== 'unlock') {
+                event.preventDefault();
+                const page = new URL(event.target.href).searchParams.get('page');
+                loadComments(page);
+            }
+        });
+    });    
+</script>
+{% endblock %}

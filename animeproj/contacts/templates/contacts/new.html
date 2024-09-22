@@ -1,0 +1,27 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}Новое сообщение{% endblock %}
+
+{% block content %}
+<!-- Form Section Begin -->
+<section class="contacts spad">
+    <div class="container"> 
+        <div class="section-title">
+            <h4>Написать сообщение</h4>
+        </div>
+        <form method="post" class="form-group">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="site-btn">Отправить</button>
+        </form>
+    </div>
+</section>
+<!-- Form Section End -->
+
+<style>
+    label {
+        color: white;
+    }
+</style>
+{% endblock content %}

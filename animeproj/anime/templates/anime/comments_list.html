@@ -1,0 +1,48 @@
+{% load static %}
+{% if comments %}
+    {% for comment in comments %}
+        <div class="anime__review__item">
+            <div class="anime__review__item__pic">
+                <a href="{% url 'user:profile_view' comment.user.id %}">
+                    {% if comment.user.userprofile.profile_image %}
+                        <img src="{{ comment.user.userprofile.profile_image.url }}" alt="Profile Avatar" class="img-fluid rounded-circle avatar-image">
+                    {% else %}
+                        <img src="{% static 'img/default-avatar.jpg' %}" alt="Default Avatar" class="img-fluid rounded-circle avatar-image">
+                    {% endif %}
+                </a>
+            </div>
+            <div class="anime__review__item__text">
+                {% load humanize %}
+                <h6>{{ comment.user.username }} - <span>{{ comment.created_at|naturaltime }}</span></h6>
+                <p>{{ comment.body }}</p>
+            </div>
+        </div>
+    {% empty %}
+        <p>Нет комментариев.</p>
+    {% endfor %}
+    <div class="product__pagination justify-center">
+        {% if comments.has_previous %}
+            <a href="?page=1" class="pagination__item">««</a>
+            <a href="?page={{ comments.previous_page_number }}" class="pagination__item">«</a>
+        {% else %}
+            <raw href="#" class="pagination__item--disabled">««</raw>
+            <raw href="#" class="pagination__item--disabled">«</raw>
+        {% endif %}
+        {% for num in comments.paginator.page_range %}
+            {% if comments.number == num %}
+                <a href="?page={{ num }}" class="pagination__item current-page">{{ num }}</a>
+            {% elif num > comments.number|add:'-4' and num < comments.number|add:'5' %}
+                <a href="?page={{ num }}" class="pagination__item">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if comments.has_next %}
+            <a href="?page={{ comments.next_page_number }}" class="pagination__item">»</a>
+            <a href="?page={{ comments.paginator.num_pages }}" class="pagination__item">»»</a>
+        {% else %}
+            <raw href="" class="pagination__item--disabled">»</raw>
+            <raw href="" class="pagination__item--disabled">»»</raw>
+        {% endif %}
+    </div>
+{% else %}
+    <p>Нет комментариев.</p>
+{% endif %}
