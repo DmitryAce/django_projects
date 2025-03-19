@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.core.exceptions import ValidationError
 from .models import User
 
 
@@ -10,6 +11,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    
+    def validate(self, data):
+        if data['email'] == data['password']:
+            raise ValidationError("Email и пароль не должны совпадать.")
+        return data
+
+    def validate_password(self, value):
+        if len(value) < 8:
+            raise ValidationError("Пароль должен содержать минимум 8 символов.")
+        if not any(char.isdigit() for char in value):
+            raise ValidationError("Пароль должен содержать хотя бы одну цифру.")
+        return value
 
     class Meta:
         model = User
